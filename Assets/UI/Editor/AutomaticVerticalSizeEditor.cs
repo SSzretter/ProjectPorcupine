@@ -6,19 +6,23 @@
 // file LICENSE, which is part of this source code package, for details.
 // ====================================================
 #endregion
+
 using UnityEditor;
 using UnityEngine;
 
-[CustomEditor(typeof(AutomaticVerticalSize))]
-public class AutomaticVerticalSizeEditor : Editor
+namespace UI.Editor
 {
-    public override void OnInspectorGUI()
+    [CustomEditor(typeof(AutomaticVerticalSize))]
+    public class AutomaticVerticalSizeEditor : UnityEditor.Editor
     {
-        DrawDefaultInspector();
-        if (GUILayout.Button("Recalc Size"))
+        public override void OnInspectorGUI()
         {
-            AutomaticVerticalSize myScript = (AutomaticVerticalSize)target;
-            myScript.AdjustSize();
+            DrawDefaultInspector();
+            if (GUILayout.Button("Recalc Size"))
+            {
+                AutomaticVerticalSize myScript = (AutomaticVerticalSize)target;
+                myScript.AdjustSize();
+            }
         }
     }
 }

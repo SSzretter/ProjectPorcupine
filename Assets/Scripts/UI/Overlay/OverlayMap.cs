@@ -594,7 +594,7 @@ public class OverlayMap : MonoBehaviour
         textView.transform.SetParent(parentPanel.transform);
         text.text = "Currently Selected:";
         text.fontSize = 14;
-        text.font = Resources.GetBuiltinResource<Font>("Arial.ttf");
+        text.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf"); // was Arial.ttf
 
         List<string> options = new List<string> { LocalizationTable.GetLocalization("overlay_none") };
         List<string> types = new List<string> { "None" };
