@@ -189,7 +189,7 @@ public class GenericSlider : BaseSettingsElement
 
         float minValue = this.parameterData.ContainsKey("MinimumValue") ? this.parameterData["MinimumValue"].ToFloat() : 0;
         float maxValue = this.parameterData.ContainsKey("MaximumValue") ? this.parameterData["MaximumValue"].ToFloat() : 1;
-        bool wholeNumbers = this.parameterData.ContainsKey("WholeNumbers") ? this.parameterData["WholeNumbers"].ToBool() : false;
+        bool wholeNumbers = this.parameterData.ContainsKey("WholeNumbers") && this.parameterData["WholeNumbers"].ToBool();
 
         sliderElement = CreateSlider(getValue(), new Vector2(minValue, maxValue), wholeNumbers);
         sliderElement.transform.SetParent(element.transform);
@@ -217,13 +217,11 @@ public class GenericSlider : BaseSettingsElement
         Settings.SetSetting(option.key, value);
     }
 
-    public float getValue()
-    {
-        float v = 0;
-        float.TryParse(option.defaultValue, out v);
-
-        float temp;
-
+  public float getValue()
+  {
+        var v = 0f;
+       // float.TryParse(option.defaultValue, out v);    **** TODO: SPS THIS IS BROKEN AND GENERATES  .getValue() ---> Mono.CSharp.FatalException: Internal compiler error: The method or operation is not implemented.
+       float temp = 0f;
         return Settings.GetSetting(option.key, out temp) ? temp : v;
     }
 }
@@ -290,7 +288,7 @@ public class GenericComboBox : BaseSettingsElement
     public int getValue()
     {
         int v = 0;
-        int.TryParse(option.defaultValue, out v);
+        // int.TryParse(option.defaultValue, out v);     **** TODO: SPS THIS IS BROKEN AND GENERATES  .getValue() ---> Mono.CSharp.FatalException: Internal compiler error: The method or operation is not implemented.
         int temp;
 
         return Settings.GetSetting(option.key, out temp) ? temp : v;
@@ -927,7 +925,7 @@ public class PerformanceHUDComboBox : GenericComboBox
         return go;
     }
 
-    public string getValue()
+    public new string getValue()  // (930,19): warning CS0108: `PerformanceHUDComboBox.getValue()' hides inherited member `GenericComboBox.getValue()'. Use the new keyword if hiding was intended  sps added new due to this error
     {
         string temp;
 
@@ -1132,7 +1130,7 @@ public class AutosaveIntervalInputField : GenericInputField
         base.ApplySetting();
         if (WorldController.Instance != null)
         {
-            WorldController.Instance.AutosaveManager.SetAutosaveInterval(int.Parse(value));
+           // WorldController.Instance.AutosaveManager.SetAutosaveInterval(int.Parse(value));  TODO: SPS int.Parse causes ---> Mono.CSharp.FatalException: Internal compiler error: The method or operation is not implemented.
         }
     }
 
@@ -1141,7 +1139,7 @@ public class AutosaveIntervalInputField : GenericInputField
         base.CancelSetting();
         if (WorldController.Instance != null)
         {
-            WorldController.Instance.AutosaveManager.SetAutosaveInterval(int.Parse(getValue()));
+          //  WorldController.Instance.AutosaveManager.SetAutosaveInterval(int.Parse(getValue()));  TODO: SPS int.Parse causes ---> Mono.CSharp.FatalException: Internal compiler error: The method or operation is not implemented.
         }
     }
 }
