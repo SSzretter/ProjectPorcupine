@@ -694,15 +694,15 @@ function Rtg_UninstallAction( furniture, deltaTime)
 	-- TODO: find elegant way to unregister previous register
 end
 
-function Berth_TestSummoning(furniture, deltaTime)
-    if (furniture.Parameters["occupied"].ToFloat() <= 0) then
-        Berth_SummonShip(furniture, nil)
-        furniture.Parameters["occupied"].SetValue(1)
-    elseif (World.Current.ShipManager.IsOccupied(furniture)) then
-        Berth_DismissShip(furniture, nil)
-        furniture.Parameters["occupied"].SetValue(0)
-    end
-end
+-- function Berth_TestSummoning(furniture, deltaTime)
+--    if (furniture.Parameters["occupied"].ToFloat() <= 0) then
+--        Berth_SummonShip(furniture, nil)
+--        furniture.Parameters["occupied"].SetValue(1)
+--    elseif (World.Current.ShipManager.IsOccupied(furniture)) then
+--        Berth_DismissShip(furniture, nil)
+--        furniture.Parameters["occupied"].SetValue(0)
+ --   end
+-- end
 
 function Berth_SummonShip(furniture, character)
     --ModUtils.ULogChannel("Ships", "Summoning ship")

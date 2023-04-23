@@ -13,6 +13,7 @@ using System.IO;
 using ICSharpCode.SharpZipLib.Zip;
 using Newtonsoft.Json.Linq;
 using UnityEngine;
+using UnityEngine.Networking;
 
 namespace ProjectPorcupine.Localization
 {
@@ -52,9 +53,7 @@ namespace ProjectPorcupine.Localization
         private static readonly string LastCommitGithubApiLocation = "https://api.github.com/repos/OrderOfThePorcupine/Localization/commits/" + GameController.GameVersion;
 
         private static readonly string LocalizationFolderPath = Path.Combine(Application.streamingAssetsPath, "Localization");
-
-        // Object for downloading localization data from web.
-        private static WWW www;
+        
 
         /// <summary>
         /// Check if there are any new updates for localization. TODO: Add a choice for a user to not update it right now.
@@ -64,13 +63,10 @@ namespace ProjectPorcupine.Localization
             string currentLocalizationVersion = GetLocalizationVersionFromConfig();
 
             // Check the latest localization version through the GitHub API.
-            WWW versionChecker = new WWW(LastCommitGithubApiLocation);
-
-            // yield until API response is downloaded
-            yield return versionChecker;
-
-            if (string.IsNullOrEmpty(versionChecker.error) == false)
-            {
+            UnityWebRequest versionChecker = UnityWebRequest.Get(LastCommitGithubApiLocation);
+            yield return versionChecker.SendWebRequest(); // yield until API response is downloaded
+ 
+            if (versionChecker.error!=null) {
                 // This could be a thing when for example user has no internet connection.
                 UnityDebugger.Debugger.LogError("LocalizationDownloader", "Error while checking for localization updates. Are you sure that you're connected to the internet?");
                 UnityDebugger.Debugger.LogError("LocalizationDownloader", versionChecker.error);
@@ -84,7 +80,7 @@ namespace ProjectPorcupine.Localization
             string latestCommitHash = string.Empty;
             try
             {
-                latestCommitHash = GetHashOfLastCommitFromAPIResponse(versionChecker.text);
+                latestCommitHash = GetHashOfLastCommitFromAPIResponse(versionChecker.downloadHandler.text);
             }
             catch (Exception e)
             {
@@ -133,45 +129,44 @@ namespace ProjectPorcupine.Localization
         // especially that it doesn't have problems with downloading from https.
         private static IEnumerator DownloadLocalizationFromWeb(Action onLocalizationDownloadedCallback)
         {
-            // If there were some files downloading previously (maybe user tried to download the newest
-            // language pack and mashed a download button?) just cancel them and start a new one.
-            if (www != null)
-            {
-                www.Dispose();
-            }
-
             UnityDebugger.Debugger.Log("LocalizationDownloader", "Localization files download has started");
 
-            www = new WWW(LocalizationRepositoryZipLocation);
-
-            // Wait for www to download current localization files.
-            yield return www;
+            // Check the latest localization version through the GitHub API.
+            UnityWebRequest versionChecker = UnityWebRequest.Get(LocalizationRepositoryZipLocation);
+            yield return versionChecker.SendWebRequest(); // yield until API response is downloaded
 
             UnityDebugger.Debugger.Log("LocalizationDownloader", "Localization files download has finished!");
-
+            
+            if (versionChecker.error!=null) {
+                // This could be a thing when for example user has no internet connection.
+                UnityDebugger.Debugger.LogError("LocalizationDownloader", "Error while checking for localization updates. Are you sure that you're connected to the internet?");
+                UnityDebugger.Debugger.LogError("LocalizationDownloader", versionChecker.error);
+                yield break;
+            }
+            
             // Almost like a callback call
-            OnDownloadLocalizationComplete(onLocalizationDownloadedCallback);
+            OnDownloadLocalizationComplete(onLocalizationDownloadedCallback, versionChecker);
         }
 
         /// <summary>
         /// Callback for DownloadLocalizationFromWeb. 
         /// It replaces current content of localizationFolderPath with fresh, downloaded one.
         /// </summary>
-        private static void OnDownloadLocalizationComplete(Action onLocalizationDownloadedCallback)
+        private static void OnDownloadLocalizationComplete(Action onLocalizationDownloadedCallback, UnityWebRequest versionChecker)
         {
-            if (www.isDone == false)
+            if (versionChecker.isDone == false)
             {
                 // This should never happen.
                 UnityDebugger.Debugger.LogError("LocalizationDownloader", "OnDownloadLocalizationComplete got called before www finished downloading.");
-                www.Dispose();
+                versionChecker.Dispose();
                 return;
             }
 
-            if (string.IsNullOrEmpty(www.error) == false)
+            if (string.IsNullOrEmpty(versionChecker.error) == false)
             {
                 // This could be a thing when for example user has no internet connection.
                 UnityDebugger.Debugger.LogError("LocalizationDownloader", "Error while downloading localizations files.");
-                UnityDebugger.Debugger.LogError("LocalizationDownloader", www.error);
+                UnityDebugger.Debugger.LogError("LocalizationDownloader", versionChecker.error);
                 return;
             }
 
@@ -183,7 +178,7 @@ namespace ProjectPorcupine.Localization
             // So I need to use some sort of 3rd party solution.
 
             // Convert array of downloaded bytes to stream.
-            using (ZipInputStream zipReadStream = new ZipInputStream(new MemoryStream(www.bytes)))
+            using (ZipInputStream zipReadStream = new ZipInputStream(new MemoryStream(Convert.ToInt32(versionChecker.downloadedBytes))))
             {
                 // Unpack zip to the hard drive.
                 ZipEntry theEntry;

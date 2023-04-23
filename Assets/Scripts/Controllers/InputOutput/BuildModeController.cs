@@ -598,8 +598,9 @@ public class BuildModeController : IMouseHandler
         if (BuildMode == BuildMode.UTILITY && SettingsKeyHolder.DeveloperMode)
         {
             Tile firstTile = World.Current.GetTileAt(dragParams.RawStartX, dragParams.RawStartY, WorldController.Instance.CameraController.CurrentLayer);
-            Utility utility = firstTile.Utilities[PrototypeManager.Utility.Get(BuildModeType).Type];
-            utility.UpdateGrid(utility);
+            var theType = PrototypeManager.Utility.Get(BuildModeType).Type;
+            if (firstTile.Utilities.TryGetValue(theType, out Utility utility))
+                utility.UpdateGrid(utility);
         }
     }
 

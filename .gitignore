@@ -31,8 +31,6 @@ ExportedObj/
 /.vscode/
 Packages/
 /.idea/*
-/UserSettings/*
-/ProjectSettings/*
 
 # Unity3D generated meta files
 *.pidb.meta
